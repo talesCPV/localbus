@@ -193,9 +193,8 @@ DELIMITER $$
 				DELETE FROM tb_frota WHERE id=Iid;
             ELSE
 				IF(Iid=0)THEN
-					SET @hash = SHA2(CONCAT(Inome, Iplaca), 256);
-					INSERT INTO tb_frota (nome,placa,modelo,grupo,hash) 
-					VALUES (Inome,Iplaca,Imodelo,Igrupo,@hash);
+					INSERT INTO tb_frota (nome,placa,modelo,grupo) 
+					VALUES (Inome,Iplaca,Imodelo,Igrupo);
 				ELSE
 					UPDATE tb_frota 
                     SET nome=Inome, modelo=Imodelo, placa=Iplaca, grupo=Igrupo, hash=SHA2(CONCAT(Inome, Iplaca), 256)
@@ -257,9 +256,9 @@ DELIMITER $$
 				SET @exist_frota = (SELECT COUNT(*) FROM tb_frota WHERE id=Iid_frota);
 				SET @open = (SELECT COUNT(*) FROM tb_em_transito WHERE (id_frota=Iid_frota OR id_usuario=Iid_usuario) AND IF(COALESCE(close_time, 1)=1,1,0));
 				IF(@open=0 AND @exist_user AND @exist_frota)THEN
-					SET @hash = SHA2(CONCAT(Iid_frota, Iid_usuario,CURRENT_TIMESTAMP), 256);
-					INSERT INTO tb_em_transito (id_frota, id_usuario,hash) 
-					VALUES (Iid_frota, Iid_usuario,@hash);
+					SET @token = SHA2(CONCAT(Iid_frota, Iid_usuario,CURRENT_TIMESTAMP), 256);
+					INSERT INTO tb_em_transito (id_frota, id_usuario,token) 
+					VALUES (Iid_frota, Iid_usuario,@token);
 				END IF;
             END IF;
         END IF;
@@ -286,3 +285,30 @@ DELIMITER $$
 DELIMITER ;
 
 /* GEO POSICIONAMENTO */
+
+ DROP PROCEDURE IF EXISTS sp_set_gps_data;
+DELIMITER $$
+	CREATE PROCEDURE sp_set_gps_data(
+		IN Itoken varchar(64),
+		IN Ilat varchar(10),
+        IN Ilon varchar(10)
+    )
+	BEGIN    
+		SET @allow = (SELECT COUNT(*)
+						FROM tb_em_transito 
+						WHERE IF(COALESCE(close_time, 1)=1,1,0)
+						AND token COLLATE utf8_general_ci = Itoken COLLATE utf8_general_ci);
+		IF(@allow)THEN
+			
+            SET @id_frota = 0;
+            SET @id_usuario = 0;
+            
+            SELECT id_frota, id_usuario INTO @id_frota,@id_usuario FROM tb_em_transito WHERE token COLLATE utf8_general_ci = Itoken COLLATE utf8_general_ci LIMIT 1;
+                
+			IF(@id_frota>0 AND @id_usuario>0)THEN
+				INSERT INTO tb_gps_data (id_frota, id_usuario,lat,lon) 
+				VALUES (@id_frota, @id_usuario,Ilat,Ilon);
+            END IF;
+        END IF;
+	END $$
+DELIMITER ;

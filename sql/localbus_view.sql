@@ -28,3 +28,9 @@ DROP VIEW IF EXISTS vw_free_driver;
     GROUP BY USR.id;
     
 	SELECT * FROM vw_free_driver;
+    
+    
+	SELECT COUNT(*)
+    FROM tb_em_transito 
+    WHERE IF(COALESCE(close_time, 1)=1,1,0)
+    AND token  = "5bcef51e3c0c3c96e59400a4ec50d748947d0164443b9ef4512610bff0ffad6f" ;

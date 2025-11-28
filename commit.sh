@@ -7,6 +7,8 @@ echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
 
+    #git config --global --add safe.directory /opt/lampp/htdocs/localbus
+
     cp ~/Documentos/SQL/localbus/*.sql sql/
 
     git init
@@ -25,9 +27,9 @@ then
     
     git commit -m "by_script"
 
-    git branch -M main
-    git remote add origin git@github.com:talesCPV/localbus.git
-    #git remote set-url origin git@github.com:talesCPV/localbus.git
+    #git branch -M main
+    #git remote add origin git@github.com:talesCPV/localbus.git
+    git remote set-url origin git@github.com:talesCPV/localbus.git
 
     git push -u -f origin main
 

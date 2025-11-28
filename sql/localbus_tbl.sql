@@ -25,7 +25,7 @@ CREATE TABLE tb_access (
 INSERT INTO tb_access (stored_proc,access)VALUES("sp_setUser","0");
 UPDATE tb_access SET access = "5" WHERE id=2;
 
- DROP TABLE tb_usr_perm_perfil;
+ DROP TABLE  IF EXISTS tb_usr_perm_perfil;
 CREATE TABLE tb_usr_perm_perfil (
     id int(11) NOT NULL AUTO_INCREMENT,
     nome varchar(30) NOT NULL,
@@ -35,31 +35,30 @@ CREATE TABLE tb_usr_perm_perfil (
 
 /* FROTA */
 
- DROP TABLE tb_frota;
+ DROP TABLE  IF EXISTS tb_frota;
 CREATE TABLE tb_frota (
     id int(11) NOT NULL AUTO_INCREMENT,
     nome varchar(30) NOT NULL,
     placa varchar(7) NOT NULL,
     modelo varchar(30) DEFAULT NULL,
     grupo varchar(15) DEFAULT NULL,
-    hash varchar(64) NOT NULL,
     UNIQUE KEY (placa),
     PRIMARY KEY (id)
 ) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
- DROP TABLE tb_em_transito;
+ DROP TABLE  IF EXISTS tb_em_transito;
 CREATE TABLE tb_em_transito (
     id_frota int(11) NOT NULL,
     id_usuario int(11) NOT NULL,
 	open_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	close_time datetime DEFAULT NULL,
-    hash varchar(64) NOT NULL,
+    token varchar(64) NOT NULL,
     FOREIGN KEY (id_frota) REFERENCES tb_frota(id) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES tb_usuario(id) ON DELETE CASCADE,    
     PRIMARY KEY (id_frota,open_time)
 ) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
- DROP TABLE tb_gps_data;
+ DROP TABLE  IF EXISTS tb_gps_data;
 CREATE TABLE tb_gps_data (
     id_frota int(11) NOT NULL,
     id_usuario int(11) NOT NULL,
