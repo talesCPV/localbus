@@ -1,0 +1,112 @@
+<template>
+    <style>
+
+      
+
+    </style>
+    
+    <fieldset>
+        <legend>Registro de Usuário</legend>
+
+        <div class="inline">
+            <label for="edtNome">Nome *</label>
+            <input type="text" class="only-view" id="edtNome" maxlength="30" disabled>
+        </div>
+
+        <div class="inline">
+            <label for="edtPlaca">Placa *</label>
+            <input type="text" class="only-view" id="edtPlaca" maxlength="8" disabled>
+        </div>
+
+        <div class="inline">
+            <label for="edtMod">Modelo</label>
+            <input type="text" class="only-view" id="edtMod" maxlength="30" disabled>
+        </div>
+
+        <div class="inline">
+            <label for="edtGrupo">Grupo</label>
+            <input type="text" class="only-view" id="edtGrupo" maxlength="15" disabled>
+        </div>        
+
+        <div class="line">
+            <button id="btnEdit"  disabled>Editar</button>
+            <button id="btnDel"   disabled>Deletar</button>
+            <button id="btnSave" class="only-view">Salvar </button>
+        </div>
+    
+      </fieldset>    
+
+</template>
+<script>
+
+    const pageData = main_data.frt_view_veiculo.data
+    const pageFunc = main_data.frt_view_veiculo.func
+    const pageScreen = document.querySelector('#card-frt_view_veiculo')
+    const novo = Object.keys(pageData).length == 0
+
+    function pageStart(){
+        pageFunc.fillData()
+    }
+
+    function openFields(open=1){
+        const view = pageScreen.querySelectorAll('.only-view')
+        for(let i=0; i<view.length; i++){
+            view[i].disabled = !open
+        }
+    }
+
+    pageFunc.fillData = ()=>{
+        if(novo){
+            pageScreen.querySelector('#btnEdit').disabled = 1
+            pageScreen.querySelector('#btnDel').disabled = 1
+            openFields()
+        }else{
+            pageScreen.querySelector('#edtPlaca').value = pageData.placa
+            pageScreen.querySelector('#edtNome').value = pageData.nome
+            pageScreen.querySelector('#edtMod').value = pageData.modelo
+            pageScreen.querySelector('#edtGrupo').value = pageData.grupo
+            pageScreen.querySelector('#btnDel').disabled = 0
+            pageScreen.querySelector('#btnEdit').disabled = 0
+        }
+    }
+
+    pageFunc.setFrota = (del=0)=>{
+
+        const params = new Object
+            params.id = novo ? 0 : pageData.id
+            params.nome = del ? '' : pageScreen.querySelector('#edtNome').value.trim()
+            params.placa = pageScreen.querySelector('#edtPlaca').value.trim()
+            params.modelo = pageScreen.querySelector('#edtMod').value.trim()
+            params.grupo = pageScreen.querySelector('#edtGrupo').value.trim()
+        
+        const myPromisse = queryDB(params,'FRT-1');
+        myPromisse.then((resolve)=>{
+            main_data.frt_veiculos.func.fillFrota()
+            closeModal('frt_view_veiculo')
+        })
+    }
+
+
+
+    pageScreen.querySelector('#btnSave').addEventListener('click',()=>{
+        if(checkField(['edtNome','edtPlaca'])){
+            pageFunc.setFrota()
+        }
+    })
+
+    pageScreen.querySelector('#btnDel').addEventListener('click',()=>{
+        if(confirm(`Deseja deletar o veículo ${pageData.nome}?`)){
+            pageFunc.setFrota(1)
+        }        
+    })
+
+    pageScreen.querySelector('#btnEdit').addEventListener('click',()=>{
+        if(confirm('Deseja abrir este registro para edição?')){
+            openFields()
+        }
+    })
+
+    pageStart()
+
+
+</script>

@@ -1,0 +1,108 @@
+<template>
+    <style>
+
+        .demo-mdi{
+            font-size: 2em;
+
+        }
+
+        #card-demo{
+            height: 400px;
+            width: 1000px;
+        }
+
+        .demo-fullscreen{
+            display: flex;
+            gap: 10px;
+            position: relative;
+            left: 50px;
+        }
+
+        .demo-resize{
+            display: flex;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .demo-drag{
+            position: absolute;
+            right: 150px;
+            top: 30px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+            width: 200px;
+        }
+
+        .demo-close{
+            display: flex;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .demo-text{
+            position: absolute;
+            max-width: 300px;
+            top: 100px;
+            left: 100px;
+        }
+
+        .demo-mobile{
+            display: none;
+        }
+
+        @media all and (max-width : 768px) {
+            .demo-fullscreen, .demo-resize, .demo-drag, .demo-text{
+                display: none;
+            }
+
+            .demo-mobile{
+                display: flex;
+                position: absolute;
+                top: 50px;
+            }
+
+        }
+
+    </style>
+    <div class="demo-fullscreen">
+        <span class="demo-mdi mdi mdi-arrow-top-left"></span>
+        <p>Dê um duplo click na barra superior para ver a janela em full screen</p>
+    </div>
+
+
+    <div class="demo-resize">
+        <p>Segure o canto da janela para remimensionar</p>
+        <span class="demo-mdi mdi mdi-arrow-bottom-right"></span>
+    </div>
+
+
+    <div class="demo-drag">
+        <span class="demo-mdi mdi mdi-cursor-pointer"></span>
+        <p>Segure a barra superior e araste a janela para a posição desejada</p>
+    </div>
+
+    <div class="demo-close">
+        <p>Fechar a Janela</p>
+        <span class="demo-mdi mdi mdi-arrow-up"></span>
+    </div>
+
+    <div class="demo-text">
+        <p>Em modo desktop, nosso sistema traz o usuário para sua zona de conforto, funcionando exatamente como em um sistema desktop comum, diminuindo muito sua curva de aprendizado</p>
+    </div>
+
+    <div class="demo-mobile">
+        <p>Em modo mobile, nossas janelas seguem o padrão já utilizados por smartfones, onde serão construídos módulos personalizados a cada aplicação do cliente</p>
+    </div>
+
+</template>
+<script>
+
+
+
+
+
+</script>

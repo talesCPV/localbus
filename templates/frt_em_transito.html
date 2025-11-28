@@ -1,0 +1,219 @@
+<template>
+    <style>
+
+        .panel{
+            display: flex;
+            flex-direction: row;
+            min-height: 300px;
+            width: 100%;
+        }
+    
+        .panel fieldset{
+            width: 100%;
+            padding: 10px;
+        }
+    
+        .middle{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    
+        .panel select{
+            margin: 0;
+            padding: 10px;
+        }
+    
+        .line{
+            width: 100%;
+        }
+    
+        </style>
+
+    <div class="tab-bar">
+        <div class="tab-item" id="tab-livre" onclick="pictab(this)">Livre</div>
+        <div class="tab-item" id="tab-transito" onclick="pictab(this)">em Trânsito</div>
+        <div class="tab-item" id="tab-historico" onclick="pictab(this)">Histórico</div>
+    </div>
+
+    <div class="tab-screen">
+        <div id="livre" class="tab">
+
+            <div class="panel">
+
+                <fieldset>
+                    <legend>Frota</legend>
+                    <select id="cmbFreeCar" size="10"></select>
+                </fieldset>
+                <div class="middle">
+                    <button id="btnBusy" class="btn-round"><span class="mdi mdi-car-connected"></span></button>
+                </div>
+                <fieldset>
+                    <legend>Motoristas</legend>
+                    <select id="cmbFreeDriver" size="10"></select>
+                </fieldset>
+        
+            </div>
+
+        </div>
+
+        <div id="transito" class="tab">
+            <table id="tblTrans"></table>
+        </div>
+        <div id="historico" class="tab">
+            <table id="tbHist"></table>
+        </div>
+    </div>
+
+
+</template>
+<script>
+
+    const pageData = main_data.frt_em_transito.data
+    const pageFunc = main_data.frt_em_transito.func
+    const pageScreen = document.querySelector('#card-frt_em_transito')
+    
+    function pageStart(){
+        pageScreen.querySelector('#tab-livre').click()
+        reload()
+    }
+
+    pageFunc.fillTransito = (open=0,field=1,signal="=",value=1)=>{
+        const params = new Object
+            params.field = field
+            params.signal = signal
+            params.value = value
+            params.open = open
+        
+        return queryDB(params,'FRT-2')
+    }
+
+    pageFunc.setTransito = (id_frota,id_usuario,open_time=0)=>{
+        const params = new Object
+            params.id_frota = id_frota
+            params.id_usuario = id_usuario
+            params.open_time = open_time
+
+        return queryDB(params,'FRT-3')
+    }
+
+    pageFunc.fillFree = (veiculo=0)=>{
+        const params = new Object
+            params.veiculo = veiculo
+        
+        return queryDB(params,'FRT-4')
+    }
+
+    pageScreen.querySelector('#btnBusy').addEventListener('click',()=>{
+        const car = pageScreen.querySelector('#cmbFreeCar').value
+        const driver = pageScreen.querySelector('#cmbFreeDriver').value
+
+        if(car.length && driver.length){
+            if(confirm('Deseja vincular este veículo com este motorista?')){
+                pageFunc.setTransito(car,driver).then((resolve)=>{
+                    reload()
+                })
+            }
+        }else{
+            alert('Você deve selecionar pelo menos um veículo e um motorista')
+        }
+
+    })
+
+    pageScreen.querySelector('#tblTrans').addEventListener('click',(e)=>{
+        data = e.target.parentNode.data
+        
+        subMenu(e)
+
+        function subMenu(e){
+                const menu = []
+
+                const close = new Object
+                close.label = 'Encerrar'
+                close.link = ()=>{          
+                    if(confirm('Deseja encerras este trajeto?')){
+                        pageFunc.setTransito(data.id_frota, data.id_usuario,data.open_time).then((resolve)=>{
+                            reload()
+                        })
+                    }
+                }
+                menu.push(close)
+
+                const qr = new Object
+                qr.label = 'Conectar App'
+                qr.link = ()=>{               
+                    console.log(data)
+                }            
+                menu.push(qr)
+
+                menuContext(menu,e)
+            }
+    })
+
+    function historico(){
+        const tbl = document.getElementById('tbHist')
+        tbl.innerHTML = ''
+        pageFunc.fillTransito().then((resolve)=>{
+            const json = JSON.parse(resolve)
+            tbl.style.display = json.length > 0 ? 'inline-table' : 'none'
+            tbl.head('Aberta,Fechada,Veículo,Placa,Motorista')
+            for(let i=0; i<json.length;i++){
+                tbl.plot(json[i],'open_time,close_time,veiculo,placa,motorista','dtm,dtm,Upp,Upp,Upp')
+            }
+        })
+    }
+
+    function em_transito(){
+        const tbl = document.getElementById('tblTrans')
+        tbl.innerHTML = ''
+        pageFunc.fillTransito(1).then((resolve)=>{
+            const json = JSON.parse(resolve)
+            tbl.style.display = json.length > 0 ? 'inline-table' : 'none'
+            tbl.head('Aberta,Veículo,Placa,Motorista')
+            for(let i=0; i<json.length;i++){
+                tbl.plot(json[i],'open_time,veiculo,placa,motorista','dtm,Upp,Upp,Upp')
+            }
+        })
+    }
+
+    function freeCar(){
+        pageFunc.fillFree(1).then((resolve)=>{
+            const cmb = pageScreen.querySelector('#cmbFreeCar')
+            cmb.innerHTML = ''
+            const json = JSON.parse(resolve)
+            for(let i=0; i<json.length;i++){
+                const opt = document.createElement('option')
+                opt.data = json[i]
+                opt.innerHTML = json[i].placa.toUpperCase() + ' - '+json[i].nome.toUpperCase()
+                opt.value = json[i].id
+                cmb.appendChild(opt)
+            }       
+        })
+    }
+
+    function freeDriver(){
+        pageFunc.fillFree(0).then((resolve)=>{
+            const cmb = pageScreen.querySelector('#cmbFreeDriver')
+            cmb.innerHTML = ''
+            const json = JSON.parse(resolve)
+            for(let i=0; i<json.length;i++){
+                const opt = document.createElement('option')
+                opt.data = json[i]
+                opt.innerHTML = json[i].nome.toUpperCase()
+                opt.value = json[i].id
+                cmb.appendChild(opt)
+            }       
+        })
+    }
+
+    function reload(){
+        historico()
+        freeCar()
+        freeDriver()
+        em_transito()
+    }
+
+
+    pageStart()
+
+</script>

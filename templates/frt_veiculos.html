@@ -1,0 +1,75 @@
+<template>
+    <style></style>
+    <fieldset class="fds-busca frt">
+        <legend>Busca</legend>
+        <div class="inline">
+            <label for="cmbBusca">Pesquisa</label>
+            <select id="cmbBusca">
+                <option value="nome" signal="LIKE">Nome</option>
+                <option value="id" signal="IN">Código</option>
+                <option value="placa" signal="LIKE" selected>Placa</option>
+                <option value="id" signal="IN">Modelo</option>
+            </select>
+            <input type="text" id="edtBusca" onkeypress="return getEnter(event, 'btnBusca-frt')">
+            <button id="btnBusca-frt" class="btn-round"><span class="mdi mdi-magnify"></span></button>
+            <button id="btnNovo" class="btn-round"><span class="mdi mdi-plus-thick"></span></button>            
+        </div>
+    </fieldset>
+
+
+    <fieldset id="fdsFrota">
+        <legend>Frota</legend>
+        <table id="tblFrota"></table>
+    </fieldset>  
+
+</template>
+<script>
+
+    const pageData = main_data.frt_veiculos.data
+    const pageFunc = main_data.frt_veiculos.func
+    const pageScreen = document.querySelector('#card-frt_veiculos')
+    
+    function pageStart(){
+        pageFunc.fillFrota()
+    }
+
+    pageScreen.querySelector('#btnNovo').addEventListener('click',()=>{
+        openHTML('frt_view_veiculo.html','pop-up','Novo Veículo')
+    })
+
+    pageFunc.fillFrota = ()=>{
+        const tbl = document.getElementById('tblFrota')
+        tbl.innerHTML = ''
+        const query = getVal('frt')        
+        const params = new Object
+            params.field = query[0]
+            params.signal = query[1]
+            params.value = query[2]
+        
+        const myPromisse = queryDB(params,'FRT-0');
+        myPromisse.then((resolve)=>{
+            const json = JSON.parse(resolve)
+            tbl.style.display = json.length > 0 ? 'inline-table' : 'none'
+            tbl.head('id,Placa,Nome,Modelo,Grupo')
+            for(let i=0; i<json.length;i++){
+                tbl.plot(json[i],'id,placa,nome,modelo,grupo','int,Upp,Upp,Upp,Upp')
+            }     
+//            closeModal('frt_veiculo')
+        })
+    }
+
+
+
+    pageScreen.querySelector('#btnBusca-frt').addEventListener('click',()=>{
+        pageFunc.fillFrota()
+    })
+
+    pageScreen.querySelector('#tblFrota').addEventListener('click',(e)=>{
+        data = e.target.parentNode.data
+        openHTML('frt_view_veiculo.html','pop-up','Novo Veículo',data)
+        
+    })
+
+    pageStart()
+
+</script>
