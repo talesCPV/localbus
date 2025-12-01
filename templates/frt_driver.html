@@ -1,0 +1,68 @@
+<template>
+    <style></style>
+    <fieldset class="fds-busca">
+        <legend>Busca</legend>
+        <div class="inline">
+            <label for="edtBusca">Pesquisa</label>
+            <input type="text" id="edtBusca" onkeypress="return getEnter(event, 'btnBusca-drv')">
+            <button id="btnBusca-drv" class="btn-round"><span class="mdi mdi-magnify"></span></button>
+            <button id="btnNovo" class="btn-round"><span class="mdi mdi-plus-thick"></span></button>            
+        </div>
+    </fieldset>
+
+
+    <fieldset id="fdsDriver">
+        <legend>Motorista</legend>
+        <table id="tblDriver"></table>
+    </fieldset>  
+
+</template>
+<script>
+
+    const pageData = main_data.frt_driver.data
+    const pageFunc = main_data.frt_driver.func
+    const pageScreen = document.querySelector('#card-frt_driver')
+    pageData.call = 'frt_driver'
+
+
+    function pageStart(){
+        pageFunc.fillDriver()
+    }
+
+    pageScreen.querySelector('#btnNovo').addEventListener('click',()=>{
+        openHTML('sys_view_user.html','pop-up','Novo Motorista',{"id":0,"access":1})
+    })
+
+    pageFunc.fillDriver = ()=>{      
+        const tbl = pageScreen.querySelector('#tblDriver')
+        tbl.innerHTML = ''
+        const params = new Object;
+            params.field = 'nome'
+            params.signal = 'LIKE'
+            params.value =  `'%${pageScreen.querySelector('#edtBusca').value.trim()}%' AND access=1`
+        const myPromisse = queryDB(params,'USR-0');
+        myPromisse.then((resolve)=>{
+            const json = JSON.parse(resolve)
+            pageScreen.querySelector('#fdsDriver').style.display = json.length > 0 ? 'block' : 'none'
+            tbl.head('Cod.,Nome,Email')
+            for(let i=0; i<json.length;i++){
+                tbl.plot(json[i],'id,nome,email','str,Upp,Low')                
+            }         
+        });
+    }
+
+
+
+    pageScreen.querySelector('#btnBusca-drv').addEventListener('click',()=>{
+        pageFunc.fillDriver()
+    })
+
+    pageScreen.querySelector('#tblDriver').addEventListener('click',(e)=>{
+        data = e.target.parentNode.data
+        openHTML('sys_view_user.html','pop-up','Novo Veículo',data)
+        
+    })
+
+    pageStart()
+
+</script>

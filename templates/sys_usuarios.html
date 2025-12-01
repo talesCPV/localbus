@@ -47,6 +47,7 @@
             params.field = query[0]
             params.signal = query[1]
             params.value = query[2]
+            console.log(params)
         const myPromisse = queryDB(params,'USR-0');
         myPromisse.then((resolve)=>{
             const json = JSON.parse(resolve)
