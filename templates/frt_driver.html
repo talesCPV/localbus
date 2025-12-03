@@ -21,16 +21,14 @@
 
     const pageData = main_data.frt_driver.data
     const pageFunc = main_data.frt_driver.func
-    const pageScreen = document.querySelector('#card-frt_driver')
-    pageData.call = 'frt_driver'
-
+    const pageScreen = document.querySelector('#card-frt_driver')   
 
     function pageStart(){
         pageFunc.fillDriver()
     }
 
     pageScreen.querySelector('#btnNovo').addEventListener('click',()=>{
-        openHTML('sys_view_user.html','pop-up','Novo Motorista',{"id":0,"access":1})
+        openHTML('sys_view_user.html','pop-up','Novo Motorista',{"id":0,"access":1,'call':'frt_driver'})
     })
 
     pageFunc.fillDriver = ()=>{      
@@ -59,6 +57,7 @@
 
     pageScreen.querySelector('#tblDriver').addEventListener('click',(e)=>{
         data = e.target.parentNode.data
+        data.call = 'frt_driver'
         openHTML('sys_view_user.html','pop-up','Novo Veículo',data)
         
     })

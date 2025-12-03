@@ -1,9 +1,6 @@
 <template>
     <style>
 
-        #btnDelUser{
-            display: none;
-        }
 
         .linCKB{
             display: flex;
@@ -27,36 +24,37 @@
     </style>
     
     <fieldset>
-        <legend>Registro de Usuário</legend>
+        <legend class="label-legend">Registro de Usuário</legend>
 
         <div class="inline">
             <label for="edtNome">Nome</label>
-            <input type="text" id="edtNome" maxlength="30">
+            <input type="text" id="edtNome" maxlength="30" class="only-view" disabled>
         </div>
 
         <div class="inline">
             <label for="edtEmail">Email</label>
-            <input type="text" id="edtEmail" maxlength="70" onkeyup="validaEmail(this)">
+            <input type="text" id="edtEmail" maxlength="70" onkeyup="validaEmail(this)" class="only-view" disabled>
         </div>
 
         <div class="inline">
             <label for="edtPass">Password</label>
-            <input type="password" id="edtPass" maxlength="25">
+            <input type="password" id="edtPass" maxlength="25" class="only-view" disabled>
         </div>
 
         <div class="inline">
             <label for="edtRepass">Repita Pass.</label>
-            <input type="password" id="edtRepass" maxlength="25">
+            <input type="password" id="edtRepass" maxlength="25" class="only-view" disabled>
         </div>        
 
-        <div class="inline">
+        <div class="inline show-perfil">
             <label for="edtAcesso">Perfil</label>
-            <select id="cmbPerfil"></select>  
+            <select id="cmbPerfil" class="only-view" disabled></select>  
         </div>
 
         <div class="line">
-            <button id="btnDelUser"  class="btn">Deletar</button>
-            <button id="btnSaveUser" class="btn">Salvar </button>
+            <button id="btnEdit"  disabled>Editar</button>
+            <button id="btnDel"  class="btn" disabled>Deletar</button>
+            <button id="btnSave" class="btnonly-view">Salvar </button>
         </div>
     
       </fieldset>    
@@ -67,20 +65,38 @@
     const pageData = main_data.sys_view_user.data
     const pageFunc = main_data.sys_view_user.func
     const pageScreen = document.querySelector('#card-sys_view_user')
-
+    const novo = Object.keys(pageData).length <= 3
+    
     function pageStart(){
-        console.log(pageData)
-        pageFunc.fillData()
+        if(novo){
+            pageScreen.querySelector('#btnEdit').disabled = 1
+            pageScreen.querySelector('#btnDel').disabled = 1
+            openFields()
+        }else{
+            pageScreen.querySelector('#btnDel').disabled = 0
+            pageScreen.querySelector('#btnEdit').disabled = 0
+            pageFunc.fillData()        
+        }
+        if(pageData.call == 'frt_driver'){
+            pageScreen.querySelector('.show-perfil').style.display = 'none'
+            pageScreen.querySelector('.label-legend').innerHTML = 'Registro de Motoristas'
+        }
         pageFunc.fillPerm()        
     }
 
+    function openFields(open=1){
+        const view = pageScreen.querySelectorAll('.only-view')
+        for(let i=0; i<view.length; i++){
+            view[i].disabled = !open
+        }
+    }
 
     pageFunc.fillData = ()=>{
         if(parseInt(pageData.id)>0){
             pageScreen.querySelector('#edtEmail').value = pageData.email
             pageScreen.querySelector('#edtNome').value = pageData.nome
             pageScreen.querySelector('#cmbPerfil').value = pageData.access
-            pageScreen.querySelector('#btnDelUser').style.display = 'block'
+            pageScreen.querySelector('#btnDel').style.display = 'block'
         }
     }
 
@@ -148,7 +164,7 @@
 
     }
 
-    pageScreen.querySelector('#btnSaveUser').addEventListener('click',()=>{
+    pageScreen.querySelector('#btnSave').addEventListener('click',()=>{
         if(checkField(['edtEmail']) && checkRepass(['edtPass','edtRepass'] || parseInt(pageData.id)>0)){
             const id = parseInt(pageData.id)
             const email = pageScreen.querySelector('#edtEmail').value.trim().toLowerCase()
@@ -162,11 +178,17 @@
         }
     })
 
-    pageScreen.querySelector('#btnDelUser').addEventListener('click',()=>{
+    pageScreen.querySelector('#btnDel').addEventListener('click',()=>{
         if(confirm(`Deseja deletar o usuário ${pageData.email}?`)){
             const id = parseInt(pageData.id)
             pageFunc.setUser(id,'')
         }        
+    })
+
+    pageScreen.querySelector('#btnEdit').addEventListener('click',()=>{
+        if(confirm('Deseja abrir este registro para edição?')){
+            openFields()
+        }
     })
 
     pageStart()
