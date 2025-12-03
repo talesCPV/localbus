@@ -22,6 +22,7 @@ then
     git add templates/
     git add files/
     git add index.html
+    git add imhere.html
     #git add readme.md
     git add commit.sh
     

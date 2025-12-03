@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I'm Here</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+
+
+    <style>
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #mapid { height: 400px; width: 100%; }
+
+        .controlers{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controlers">
+        <p>I'm Here</p>
+        <label for="edtToken">Token</label>
+        <input type="text" id="edtToken">
+        <label for="edtLat">Lat</label>
+        <input type="text" id="edtLat" readonly>
+        <label for="edtLon">Lon</label>
+        <input type="text" id="edtLon" readonly>    
+        <button id="btnSend">Send</button>
+    
+    </div>
+
+
+    <div id="mapid"></div>
+    <div>
+        <label for="ckbRecor">Recorrente</label>
+        <input type="checkbox" id="ckbRecor" checked>
+    </div>
+
+</body>
+<script>
+
+    const queryString = window.location.search;
+    const geo = {'id':0,'lat':0,'lon':0}
+    var map = L.map('mapid').setView([geo.lat, geo.lon], 13);
+    var marker
+
+    getUrlParams()
+    getLocation()    
+
+    setInterval(updateClock, 10000);
+
+    function getUrlParams(){
+        const urlParams = new URLSearchParams(queryString);
+        geo.id = urlParams.get('token')
+        geo.lat = urlParams.get('lat')
+        geo.lon = urlParams.get('lon')
+
+        document.querySelector('#edtToken').value = geo.id        
+        document.querySelector('#edtLat').value = geo.lat
+        document.querySelector('#edtLon').value = geo.lon
+        openMap()
+    }
+
+
+    function openMap(zoom=13){
+        
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        marker = L.marker([geo.lat,geo.lon]).addTo(map);
+        map.panTo(new L.LatLng(geo.lat, geo.lon));
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position)=>{
+
+                geo.lat = position.coords.latitude
+                geo.lon = position.coords.longitude
+
+                sendGeoLoc(geo.id,geo.lat,geo.lon)
+                marker = L.marker([geo.lat,geo.lon]).addTo(map);
+                map.panTo(new L.LatLng(geo.lat, geo.lon));
+
+
+            }, null);
+        } else { 
+           alert("Geolocation is not supported by this browser.")
+        }
+    }
+
+
+    function sendGeoLoc(token,lat,lon){
+        document.querySelector('#edtToken').value = token        
+        document.querySelector('#edtLat').value = lat
+        document.querySelector('#edtLon').value = lon
+        const data = new URLSearchParams()
+            data.append("token", token)
+            data.append("lat", lat)
+            data.append("lon", lon)
+        const myRequest = new Request("backend/geoloc.php",{
+            method : "POST",
+            body : data
+        })
+
+        fetch(myRequest)
+        .then(function (response){
+            if (response.status === 200) { 
+                console.log("Salvou!")        
+            } else { 
+                reject(new Error("Houve algum erro na comunicação com o servidor"));
+            } 
+        });
+
+
+    }
+
+    function updateClock(){
+        if(document.querySelector('#ckbRecor').checked){
+            getLocation()
+        }
+    }
+
+    document.querySelector('#btnSend').addEventListener('click',()=>{
+        geo.id = document.querySelector('#edtToken').value.trim()
+        sendGeoLoc(geo.id,geo.lat,geo.lon)
+    })
+
+
+</script>
+</html>
