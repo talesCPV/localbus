@@ -79,7 +79,7 @@ function newModal(title, content, width, id){
         mod_card.style.width = width
         mod_card.style.top = upper_page.top+'px'
         mod_card.style.left = upper_page.left+'px'
-        mod_card.style.overflow = 'auto'
+//        mod_card.style.overflow = 'auto'
         mod_card.addEventListener('mousedown',(e)=>{
             queueModal(id)
         })
@@ -220,7 +220,7 @@ function menuContext(tbl,e){
         mod_card.style.margin = '0 auto'
         mod_card.style.top = e.clientY+'px'
         mod_card.style.left = e.clientX+'px'
-        mod_card.style.overflow = 'auto'
+//        mod_card.style.overflow = 'auto'
 
     const mod_content = document.createElement('table')
         mod_content.classList = 'modal-text'

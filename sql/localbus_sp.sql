@@ -294,6 +294,7 @@ DELIMITER $$
         IN Ilon varchar(10)
     )
 	BEGIN    
+		
 		SET @allow = (SELECT COUNT(*)
 						FROM tb_em_transito 
 						WHERE IF(COALESCE(close_time, 1)=1,1,0)
@@ -308,7 +309,10 @@ DELIMITER $$
 			IF(@id_frota>0 AND @id_usuario>0)THEN
 				INSERT INTO tb_gps_data (id_frota, id_usuario,lat,lon) 
 				VALUES (@id_frota, @id_usuario,Ilat,Ilon);
-            END IF;
+			ELSE
+				SET @allow = 2;
+            END IF;            
         END IF;
+        SELECT @allow AS markpoint;
 	END $$
 DELIMITER ;

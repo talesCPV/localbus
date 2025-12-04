@@ -48,7 +48,7 @@
     <div id="mapid"></div>
     <div>
         <label for="ckbRecor">Recorrente</label>
-        <input type="checkbox" id="ckbRecor" checked>
+        <input type="checkbox" id="ckbRecor">
     </div>
 
 </body>
@@ -66,9 +66,9 @@
 
     function getUrlParams(){
         const urlParams = new URLSearchParams(queryString);
-        geo.id = urlParams.get('token')
-        geo.lat = urlParams.get('lat')
-        geo.lon = urlParams.get('lon')
+        geo.id = urlParams.get('token') != null ?urlParams.get('token') : ''
+        geo.lat = urlParams.get('lat') != null ?urlParams.get('lat') : ''
+        geo.lon = urlParams.get('lon') != null ?urlParams.get('lon') : ''
 
         document.querySelector('#edtToken').value = geo.id        
         document.querySelector('#edtLat').value = geo.lat
