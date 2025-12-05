@@ -23,7 +23,7 @@ then
     git add files/
     git add index.html
     git add imhere.html
-    #git add readme.md
+    git add track.html
     git add commit.sh
     
     git commit -m "by_script"

@@ -316,3 +316,15 @@ DELIMITER $$
         SELECT @allow AS markpoint;
 	END $$
 DELIMITER ;
+
+/* GPS */
+
+ DROP PROCEDURE IF EXISTS sp_view_open_track;
+DELIMITER $$
+	CREATE PROCEDURE sp_view_open_track(
+        IN Iid_frota int
+    )
+	BEGIN
+		SELECT * FROM vw_open_track WHERE id_frota=Iid_frota;
+	END $$
+DELIMITER ;

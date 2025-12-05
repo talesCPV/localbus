@@ -146,8 +146,15 @@
                 }            
                 menu.push(qr)
 
+                const track = new Object
+                track.label = 'Gravar Geolocalização'
+                track.link = ()=>{               
+                    window.open(`https://planet3.com.br/localbus/track.html?id=${data.token}`,'_blank');
+                }            
+                menu.push(track)
+
                 const map = new Object
-                map.label = 'Abrir Mapa'
+                map.label = 'Localização'
                 map.link = ()=>{               
                     window.open(`https://planet3.com.br/localbus/imhere.html?token=${data.token}`,'_blank');
                 }            

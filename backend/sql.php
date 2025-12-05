@@ -21,7 +21,10 @@
         "FRT-3"  => 'CALL sp_set_em_transito(@access,@hash,x00,x01,"x02");', // ID_FROTA,ID_USUARIO,OPEN_TIME(0=new register)
         "FRT-4"  => 'CALL sp_view_free(@access,@hash,x00);', // free (0=motoristas, 1=veiculos)
 
-        
+        /* GPS */
+        "GPS-0"  => 'CALL sp_view_open_track(x00);', // ID_FROTA
+
+
 
 
     );

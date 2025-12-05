@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="assets/icons/local.png">
+
+    <!-- Internal CDNs -->    
+    <script src="scripts/backend.js"></script>
+
     <title>I'm Here</title>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -35,16 +39,9 @@
 
     <div class="controlers">
         <p>I'm Here</p>
-        <label for="edtToken">Token</label>
-        <input type="text" id="edtToken">
-        <label for="edtLat">Lat</label>
-        <input type="text" id="edtLat" readonly>
-        <label for="edtLon">Lon</label>
-        <input type="text" id="edtLon" readonly>    
-        <button id="btnSend">Send</button>
-    
+        <label for="edtCarro">Carro</label>
+        <input type="text" id="edtCarro">    
     </div>
-
 
     <div id="mapid"></div>
     <div>
@@ -58,25 +55,36 @@
     const queryString = window.location.search;
     const geo = {'id':0,'lat':0,'lon':0}
     var map = L.map('mapid').setView([geo.lat, geo.lon], 13);
+        map.polyline = new Object
+        map.marker = new Object
     var marker
 
     getUrlParams()
-    getLocation()    
-
+ 
     setInterval(updateClock, 10000);
 
     function getUrlParams(){
         const urlParams = new URLSearchParams(queryString);
-        geo.id = urlParams.get('token') != null ?urlParams.get('token') : ''
-        geo.lat = urlParams.get('lat') != null ?urlParams.get('lat') : ''
-        geo.lon = urlParams.get('lon') != null ?urlParams.get('lon') : ''
+        geo.id = urlParams.get('id') != null ?urlParams.get('id') : 0
 
-        document.querySelector('#edtToken').value = geo.id        
-        document.querySelector('#edtLat').value = geo.lat
-        document.querySelector('#edtLon').value = geo.lon
+        document.querySelector('#edtCarro').value = geo.id        
+
+        getPosition(geo.id)
+
         openMap()
     }
 
+    function getPosition(id){
+        const params = new Object;
+            params.id_frota = id
+        const myPromisse = queryDB(params,'GPS-0');
+        myPromisse.then((resolve)=>{
+            const json = JSON.parse(resolve)
+            console.log(json)
+            drawTrack(json)
+
+        })
+    }
 
     function openMap(zoom=13){
         
@@ -88,60 +96,65 @@
         map.panTo(new L.LatLng(geo.lat, geo.lon));
     }
 
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position)=>{
-
-                geo.lat = position.coords.latitude
-                geo.lon = position.coords.longitude
-
-                sendGeoLoc(geo.id,geo.lat,geo.lon)
-                marker = L.marker([geo.lat,geo.lon]).addTo(map);
-                map.panTo(new L.LatLng(geo.lat, geo.lon));
-
-
-            }, null);
-        } else { 
-           alert("Geolocation is not supported by this browser.")
-        }
-    }
-
-
-    function sendGeoLoc(token,lat,lon){
-        document.querySelector('#edtToken').value = token        
-        document.querySelector('#edtLat').value = lat
-        document.querySelector('#edtLon').value = lon
-        const data = new URLSearchParams()
-            data.append("token", token)
-            data.append("lat", lat)
-            data.append("lon", lon)
-        const myRequest = new Request("backend/geoloc.php",{
-            method : "POST",
-            body : data
-        })
-
-        fetch(myRequest)
-        .then(function (response){
-            if (response.status === 200) { 
-                console.log("Salvou!")        
-            } else { 
-                reject(new Error("Houve algum erro na comunicação com o servidor"));
-            } 
-        });
-
-
-    }
-
     function updateClock(){
         if(document.querySelector('#ckbRecor').checked){
-            getLocation()
+            getPosition(geo.id)
         }
     }
 
-    document.querySelector('#btnSend').addEventListener('click',()=>{
-        geo.id = document.querySelector('#edtToken').value.trim()
-        sendGeoLoc(geo.id,geo.lat,geo.lon)
-    })
+    function drawTrack(pts, mp=map, name='default', color='blue',center=1){
+        const points = []
+        const alt = []
+        let last_pt = []
+
+        try{
+            mp.removeLayer(mp.polyline[name])
+        }catch{null}
+        
+        for(let i=0; i<pts.length; i++){
+            points.push([pts[i].lat,pts[i].lon])
+            alt.push([parseFloat(pts[i].dist),parseFloat(pts[i].ele)])
+            last_pt = [pts[i].lat,pts[i].lon]
+        }
+
+        setMark('pos',last_pt)
+
+        mp.polyline[name] = new L.Polyline(points, {
+            color: color,
+            weight: 3,
+            opacity: 0.5,
+            smoothFactor: 1
+        })
+        mp.polyline[name].addTo(mp)
+        mp.center = mp.polyline[name].getBounds().getCenter()
+        if(center){
+            mp.setView(new L.LatLng(mp.center.lat,mp.center.lng), 11)
+        }
+
+        return alt
+    }
+
+    function setMark(name,pos,mp=map,center=false,color='blue'){
+
+        try{
+            mp.removeLayer(mp.marker[name])
+        }catch{null}
+
+        mp.marker[name] = L.marker(pos,{icon: makeIcon(color)}).addTo(mp)
+        if(center){
+            mp.setView(new L.LatLng(pos[0],pos[1]))
+        }
+    }
+
+    function makeIcon(color){
+
+        return new L.Icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        })
+    }
 
 
 </script>
